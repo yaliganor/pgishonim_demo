@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="he">
+<meta charset="UTF-8">
+<head>
+    <title>צור תמונה</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            direction: rtl;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        input {
+            font-size: 18px;
+            padding: 5px;
+        }
+
+        button {
+            font-size: 18px;
+            padding: 10px 20px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        canvas {
+            display: block;
+            margin: 20px auto;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>מלא שם:</h2>
+    <input id="nameInput" placeholder="הכנס שם">
+    <br>
+    <button onclick="createImage()">צור תמונה</button>
+
+    <canvas id="canvas"></canvas>
+    <br>
+    <a id="downloadLink" style="display:none;" download="output.png">הורד את התמונה</a>
+
+    <script>
+        function createImage() {
+            const name = document.getElementById('nameInput').value.trim();
+            if (!name) { alert("אנא הכנס שם"); return; }
+
+            const img = new Image();
+            img.src = 'static/template.png'; // make sure template.png is in static/
+            img.onload = function () {
+                const canvas = document.getElementById('canvas');
+                const ctx = canvas.getContext('2d');
+
+                // Scale canvas 80%
+                canvas.width = img.width * 0.8;
+                canvas.height = img.height * 0.8;
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                // Automatic date & time
+                const now = new Date();
+                // Build date as DD/MM/YYYY
+                const day = String(now.getDate()).padStart(2, '0');
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const year = now.getFullYear();
+                const dateStr = `${day}/${month}/${year}`;
+
+                const timeStr = now.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+
+                ctx.fillStyle = "#6f7e89";
+                ctx.textBaseline = "middle";
+
+                // Draw time
+                ctx.font = `bold ${55 * 0.8}px Arial`;
+                ctx.textAlign = "left";
+                ctx.fillText(timeStr, canvas.width * 0.07, canvas.height * 0.385);
+
+                // Draw date
+                ctx.textAlign = "left";
+                ctx.fillText(dateStr, canvas.width * 0.65, canvas.height * 0.385);
+
+                // Draw name RTL with auto font size
+                ctx.textAlign = "right";
+                ctx.direction = "rtl";
+
+                let maxWidth = canvas.width * 0.17; // maximum width for the name
+                let fontSize = 55 * 0.8; // starting font size
+                ctx.font = `bold ${fontSize}px Arial`;
+
+                // Shrink font if too wide
+                while (ctx.measureText(name).width > maxWidth && fontSize > 10) {
+                    fontSize -= 1;
+                    ctx.font = `bold ${fontSize}px Arial`;
+                }
+
+                ctx.fillText(name, canvas.width * 0.90, canvas.height * 0.445);
+
+                // Show download link
+                const link = document.getElementById('downloadLink');
+                link.href = canvas.toDataURL("image/png");
+                link.style.display = "inline";
+            };
+        }
+    </script>
+
+</body>
+</html>
